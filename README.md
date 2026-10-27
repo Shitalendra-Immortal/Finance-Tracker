@@ -50,6 +50,9 @@ project for database queries and real data analysis.
 - **Budgets** — set a monthly limit per expense category, see used and
   remaining amounts. Status turns `WARNING` at 80% spent and `OVER BUDGET`
   at 100%, and adding an expense that crosses a budget pops up an alert.
+  Picking `All` in the category list sets the same limit for every expense
+  category at once, and a selected budget can be deleted (with a
+  confirmation) without touching other months.
   Budgets never carry forward on their own — a "Copy to next month" button
   copies them only when you ask.
 - **Smart spending alerts** — the dashboard warns not only on budget
@@ -62,7 +65,10 @@ project for database queries and real data analysis.
   spending categories highlighted. Export all transactions to CSV.
 - **Savings goals** — create goals (laptop, trip, emergency fund) with a
   target amount and deadline, add contributions, watch progress, and see
-  the even monthly amount needed to hit the target on time.
+  the even monthly amount needed to hit the target on time. Selecting a
+  goal and hitting "Edit selected goal" loads it into the form, and the
+  button becomes "Update goal" (a new target must still cover what is
+  already saved).
 - **Loans** — money lent to friends, by name: amount, date and note, with
   partial repayments recorded per loan. The table shows what each person
   has returned, what they still owe, and whether the loan is OPEN or

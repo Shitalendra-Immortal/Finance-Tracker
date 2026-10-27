@@ -220,6 +220,7 @@
         <Button fx:id="setBudgetButton" text="Set budget"/>
         <Button fx:id="loadBudgetsButton" text="Refresh"/>
         <Button fx:id="copyBudgetsButton" text="Copy to next month"/>
+        <Button fx:id="deleteBudgetButton" text="Delete selected budget"/>
       </HBox>
       <Label text="Status turns WARNING at 80% of the limit and OVER BUDGET at 100%. Budgets never carry forward on their own — use 'Copy to next month' when you want them to."
              wrapText="true" styleClass="hint-text"/>
@@ -271,6 +272,8 @@
         <TextField fx:id="contributionAmountField" promptText="Contribution amount" prefWidth="160"/>
         <Button fx:id="contributeButton" text="Add contribution to selected goal"/>
         <Button fx:id="deleteGoalButton" text="Delete selected goal"/>
+        <Button fx:id="editGoalButton" text="Edit selected goal"/>
+        <Button fx:id="cancelGoalEditButton" text="Cancel edit" visible="false"/>
       </HBox>
       <Label text="Monthly needed = remaining amount ÷ months left until the deadline."
              styleClass="hint-text"/>

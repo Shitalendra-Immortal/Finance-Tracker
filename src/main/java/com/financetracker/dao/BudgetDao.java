@@ -14,6 +14,17 @@ import java.util.List;
 /** All budget SQL. The status rule lives in BudgetService, not here. */
 public class BudgetDao {
 
+    /** Deletes one category's budget for one month. No other month is touched. */
+    public void deleteByCategoryAndMonth(int categoryId, String month) throws SQLException {
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(
+                     "DELETE FROM budgets WHERE category_id = ? AND month = ?")) {
+            ps.setInt(1, categoryId);
+            ps.setString(2, month);
+            ps.executeUpdate();
+        }
+    }
+
     /** Insert a new budget, or replace the amount if one already exists for that month. */
     public void upsert(Budget budget) throws SQLException {
         String sql = "INSERT INTO budgets (category_id, month, amount) VALUES (?, ?, ?) "

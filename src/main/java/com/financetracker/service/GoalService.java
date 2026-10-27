@@ -46,6 +46,16 @@ public class GoalService {
         goalDao.create(new SavingsGoal(name, target, deadline));
     }
 
+    /** Editing keeps contributions: the new target must still cover what is already saved. */
+    public void updateGoal(int goalId, String name, BigDecimal target, LocalDate deadline,
+            BigDecimal alreadySaved) throws SQLException {
+        validateGoal(name, target, deadline);
+        if (alreadySaved != null && target.compareTo(alreadySaved) < 0) {
+            throw new IllegalArgumentException("Target can't be less than the amount already saved.");
+        }
+        goalDao.update(goalId, name, target, deadline);
+    }
+
     public void addContribution(int goalId, BigDecimal amount, LocalDate date) throws SQLException {
         validateContribution(amount);
         goalDao.addContribution(goalId, amount, date, "");

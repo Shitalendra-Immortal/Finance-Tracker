@@ -97,6 +97,10 @@ public class MainController {
     /** -1 means the form is adding; otherwise it holds the id being edited. */
     private int editingTxnId = -1;
 
+    /** Same pattern for the savings-goal form; the saved amount guards the new target. */
+    private int editingGoalId = -1;
+    private BigDecimal editingGoalSaved = BigDecimal.ZERO;
+
     /** Donut slice colors, in order — matches the .default-colorN.chart-pie rules in style.css. */
     private static final String[] DONUT_COLORS = {
             "#3B82F6", "#34D399", "#F87171", "#FBBF24",
@@ -190,6 +194,7 @@ public class MainController {
     @FXML private Button setBudgetButton;
     @FXML private Button loadBudgetsButton;
     @FXML private Button copyBudgetsButton;
+    @FXML private Button deleteBudgetButton;
     @FXML private TableView<BudgetStatus> budgetTable;
     @FXML private TableColumn<BudgetStatus, String> budgetCategoryCol;
     @FXML private TableColumn<BudgetStatus, BigDecimal> limitCol;
@@ -219,6 +224,8 @@ public class MainController {
     @FXML private TextField contributionAmountField;
     @FXML private Button contributeButton;
     @FXML private Button deleteGoalButton;
+    @FXML private Button editGoalButton;
+    @FXML private Button cancelGoalEditButton;
     @FXML private TableView<SavingsGoal> goalTable;
     @FXML private TableColumn<SavingsGoal, String> goalNameCol;
     @FXML private TableColumn<SavingsGoal, BigDecimal> goalTargetCol;
@@ -380,6 +387,14 @@ public class MainController {
                     deleteButton.setDisable(none);
                 });
 
+        // Budget Delete and goal Edit likewise need a selected row.
+        deleteBudgetButton.setDisable(true);
+        editGoalButton.setDisable(true);
+        budgetTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldSel, newSel) -> deleteBudgetButton.setDisable(newSel == null));
+        goalTable.getSelectionModel().selectedItemProperty().addListener(
+                (obs, oldSel, newSel) -> editGoalButton.setDisable(newSel == null));
+
         // Wiring.
         typeBox.setOnAction(e -> loadCategoriesForType());
         dashboardMonthBox.setOnAction(e -> loadDashboard());
@@ -396,11 +411,14 @@ public class MainController {
         setBudgetButton.setOnAction(e -> onSetBudget());
         loadBudgetsButton.setOnAction(e -> loadBudgets());
         copyBudgetsButton.setOnAction(e -> onCopyBudgets());
+        deleteBudgetButton.setOnAction(e -> onDeleteBudget());
         loadReportButton.setOnAction(e -> loadReport());
         exportButton.setOnAction(e -> onExportCsv());
         addGoalButton.setOnAction(e -> onAddGoal());
         contributeButton.setOnAction(e -> onContribute());
         deleteGoalButton.setOnAction(e -> onDeleteGoal());
+        editGoalButton.setOnAction(e -> onEditGoal());
+        cancelGoalEditButton.setOnAction(e -> resetGoalEditState());
         importButton.setOnAction(e -> onImportCsv());
         addLoanButton.setOnAction(e -> onAddLoan());
         recordRepaymentButton.setOnAction(e -> onRecordRepayment());
@@ -908,7 +926,10 @@ public class MainController {
     private void loadExpenseCategoriesForBudgets() {
         try {
             List<Category> cats = transactionService.findCategoriesByType("EXPENSE");
-            budgetCategoryBox.setItems(FXCollections.observableArrayList(cats));
+            List<Category> withAll = new ArrayList<>();
+            withAll.add(new Category(-1, "All", "EXPENSE"));
+            withAll.addAll(cats);
+            budgetCategoryBox.setItems(FXCollections.observableArrayList(withAll));
             if (!cats.isEmpty()) {
                 budgetCategoryBox.setValue(cats.get(0));
             }
@@ -1061,7 +1082,16 @@ public class MainController {
             Category category = budgetCategoryBox.getValue();
             String month = budgetMonthField.getText().trim();
             BigDecimal amount = Money.parse(budgetAmountField.getText());
-            budgetService.setBudget(category, month, amount);
+            if (category != null && category.getId() == -1) {
+                // "All": the same limit for every expense category at once.
+                for (Category cat : budgetCategoryBox.getItems()) {
+                    if (cat.getId() != -1) {
+                        budgetService.setBudget(cat, month, amount);
+                    }
+                }
+            } else {
+                budgetService.setBudget(category, month, amount);
+            }
             budgetAmountField.clear();
             loadBudgets();
             loadDashboard();
@@ -1096,6 +1126,42 @@ public class MainController {
                 showWarning(e.getMessage());
             } catch (SQLException e) {
                 showError("Could not copy budgets", e);
+            }
+        }
+    }
+
+    private void onDeleteBudget() {
+        BudgetStatus selected = budgetTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showWarning("Select a budget in the table first.");
+            return;
+        }
+        Category category = null;
+        for (Category cat : budgetCategoryBox.getItems()) {
+            if (cat.getId() != -1 && cat.getName().equals(selected.getCategoryName())) {
+                category = cat;
+                break;
+            }
+        }
+        if (category == null) {
+            showWarning("That category is no longer available.");
+            return;
+        }
+        String month = budgetMonthField.getText().trim();
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        styleDialog(confirm.getDialogPane());
+        confirm.setTitle("Delete budget");
+        confirm.setHeaderText(null);
+        confirm.setContentText("Delete the budget for '" + selected.getCategoryName()
+                + "' for " + month + "?");
+        Optional<ButtonType> answer = confirm.showAndWait();
+        if (answer.isPresent() && answer.get() == ButtonType.OK) {
+            try {
+                budgetService.deleteBudget(category, month);
+                loadBudgets();
+                loadDashboard();
+            } catch (SQLException e) {
+                showError("Could not delete the budget", e);
             }
         }
     }
@@ -1199,14 +1265,44 @@ public class MainController {
 
     // ---------------- Savings goals ----------------
 
+    private void onEditGoal() {
+        SavingsGoal selected = goalTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showWarning("Select a goal in the table first.");
+            return;
+        }
+        goalNameField.setText(selected.getName());
+        goalTargetField.setText(Money.format(selected.getTargetAmount()));
+        goalDeadlinePicker.setValue(selected.getDeadline());
+        editingGoalId = selected.getId();
+        editingGoalSaved = selected.getSavedAmount();
+        addGoalButton.setText("Update goal");
+        cancelGoalEditButton.setVisible(true);
+    }
+
+    private void resetGoalEditState() {
+        editingGoalId = -1;
+        editingGoalSaved = BigDecimal.ZERO;
+        addGoalButton.setText("Add goal");
+        cancelGoalEditButton.setVisible(false);
+        goalNameField.clear();
+        goalTargetField.clear();
+        goalDeadlinePicker.setValue(LocalDate.now().plusYears(1));
+    }
+
     private void onAddGoal() {
         try {
             String name = goalNameField.getText().trim();
             BigDecimal target = Money.parse(goalTargetField.getText());
             LocalDate deadline = goalDeadlinePicker.getValue();
-            goalService.createGoal(name, target, deadline);
-            goalNameField.clear();
-            goalTargetField.clear();
+            if (editingGoalId != -1) {
+                goalService.updateGoal(editingGoalId, name, target, deadline, editingGoalSaved);
+                resetGoalEditState();
+            } else {
+                goalService.createGoal(name, target, deadline);
+                goalNameField.clear();
+                goalTargetField.clear();
+            }
             loadGoals();
         } catch (IllegalArgumentException e) {
             showWarning(e.getMessage());

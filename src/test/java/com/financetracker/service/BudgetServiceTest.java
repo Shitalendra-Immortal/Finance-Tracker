@@ -1,5 +1,7 @@
 package com.financetracker.service;
 
+import com.financetracker.dao.BudgetDao;
+import com.financetracker.model.Category;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -53,5 +55,15 @@ class BudgetServiceTest {
     @Test
     void validateAcceptsGoodBudget() {
         BudgetService.validateBudget("2026-10", new BigDecimal("5000"));
+    }
+
+    @Test
+    void deleteRejectsMissingCategoryAndBadMonth() throws Exception {
+        BudgetService service = new BudgetService(new BudgetDao());
+        assertThrows(IllegalArgumentException.class, () ->
+                service.deleteBudget(null, "2026-11"));
+        Category food = new Category(1, "Food", "EXPENSE");
+        assertThrows(IllegalArgumentException.class, () ->
+                service.deleteBudget(food, "2026-13"));
     }
 }

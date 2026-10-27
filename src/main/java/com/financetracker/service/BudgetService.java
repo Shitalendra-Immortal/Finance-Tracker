@@ -118,6 +118,14 @@ public class BudgetService {
         budgetDao.upsert(new Budget(category.getId(), month, amount));
     }
 
+    public void deleteBudget(Category category, String month) throws SQLException {
+        if (category == null) {
+            throw new IllegalArgumentException("Pick a category.");
+        }
+        validateMonth(month);
+        budgetDao.deleteByCategoryAndMonth(category.getId(), month);
+    }
+
     /** Copies budgets to next month. Only ever called from the copy button. */
     public void copyToNextMonth(String month) throws SQLException {
         validateMonth(month);

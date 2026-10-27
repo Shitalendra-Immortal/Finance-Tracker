@@ -27,6 +27,19 @@ public class SavingsGoalDao {
         }
     }
 
+    /** Name, target, and deadline are editable; contributions stay untouched. */
+    public void update(int goalId, String name, BigDecimal target, LocalDate deadline) throws SQLException {
+        String sql = "UPDATE savings_goals SET name = ?, target_amount = ?, deadline = ? WHERE id = ?";
+        try (Connection conn = Database.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, name);
+            ps.setBigDecimal(2, target);
+            ps.setDate(3, Date.valueOf(deadline));
+            ps.setInt(4, goalId);
+            ps.executeUpdate();
+        }
+    }
+
     /** All goals with their saved totals (sum of contributions), nearest deadline first. */
     public List<SavingsGoal> findAllWithSaved() throws SQLException {
         List<SavingsGoal> out = new ArrayList<>();

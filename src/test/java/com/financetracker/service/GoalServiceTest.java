@@ -1,5 +1,6 @@
 package com.financetracker.service;
 
+import com.financetracker.dao.SavingsGoalDao;
 import com.financetracker.model.SavingsGoal;
 import org.junit.jupiter.api.Test;
 
@@ -65,5 +66,14 @@ class GoalServiceTest {
                 GoalService.validateContribution(BigDecimal.ZERO));
         assertThrows(IllegalArgumentException.class, () ->
                 GoalService.validateContribution(new BigDecimal("-50")));
+    }
+
+    @Test
+    void updateRejectsTargetBelowAlreadySaved() throws Exception {
+        GoalService service = new GoalService(new SavingsGoalDao());
+        // Validation runs before any database call, so this needs no MySQL.
+        assertThrows(IllegalArgumentException.class, () ->
+                service.updateGoal(1, "Laptop", new BigDecimal("5000"),
+                        LocalDate.now().plusMonths(6), new BigDecimal("8000")));
     }
 }
