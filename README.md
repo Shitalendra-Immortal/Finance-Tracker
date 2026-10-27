@@ -12,12 +12,16 @@ project for database queries and real data analysis.
   beyond the dashboard items below, only the look.
 - **Dashboard** — a greeting header with month selector and a prominent
   Add button; four stat cards (net cash flow, total income, total
-  expenses, savings rate) with month-over-month comparisons against the
-  previous month ("—" when the previous month is zero, and a note that
-  current-month comparisons are month-to-date); quick actions for Set
-  budget and Export report; budget alerts with an encouraging empty
-  state that distinguishes "no budgets set" from "all budgets fine"; a
-  cash-flow chart over the last 6 months; a donut spending chart with
+  expenses, savings rate) with small color-coded icons and month-over-month
+  lines that read "No activity yet" when the current month is empty and
+  "New activity" when the previous month was zero, with expense lines
+  saying whether spending rose or fell (and a note that current-month
+  comparisons are month-to-date); quick actions for Set
+  budget and Export report; a compact alerts panel (one icon, one short
+  message, one action) that shows the closest budget to its limit when
+  all budgets are fine; a cash-flow chart over the last 3, 6, or 12
+  months with exact per-month tooltips, the selected month outlined,
+  and quiet months muted; a donut spending chart with
   the total in the middle and a legend, replaced by an honest sentence
   when a single category (or none) makes a chart meaningless; a budget
   overview with progress bars; and recent transactions with a View all

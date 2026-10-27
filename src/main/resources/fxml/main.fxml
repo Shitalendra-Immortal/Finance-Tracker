@@ -50,7 +50,7 @@
   <!-- ================= DASHBOARD ================= -->
   <Tab text="Dashboard">
     <ScrollPane fitToWidth="true">
-      <VBox spacing="20" style="-fx-padding: 20;">
+      <VBox spacing="14" style="-fx-padding: 16;">
         <!-- Header: greeting and key actions. The title and metrics are the focus. -->
         <HBox spacing="16" alignment="CENTER_LEFT">
           <VBox spacing="2" HBox.hgrow="ALWAYS">
@@ -61,26 +61,39 @@
           <ComboBox fx:id="dashboardMonthBox" prefWidth="140"/>
           <Button fx:id="dashboardAddButton" text="+ Add transaction" styleClass="primary-button"/>
         </HBox>
-        <!-- Key metrics: net cash flow is monthly income minus expenses, not an account balance. -->
-        <HBox spacing="16">
+        <!-- Key metrics: net cash flow is monthly income minus expenses, not an account balance.
+             Each card has a small color-coded icon; values stay left-aligned at one size. -->
+        <HBox spacing="12">
           <VBox spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
-            <Label text="Net cash flow" styleClass="stat-label"/>
-            <Label fx:id="balanceLabel" text="0.00" styleClass="stat-value balance-value"/>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+              <Label fx:id="netIconLabel" styleClass="stat-icon stat-icon-net"/>
+              <Label text="Net cash flow" styleClass="stat-label"/>
+            </HBox>
+            <Label fx:id="balanceLabel" text="0.00" styleClass="stat-value net-value"/>
             <Label fx:id="balanceDeltaLabel" styleClass="delta-text"/>
           </VBox>
           <VBox spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
-            <Label text="Total income" styleClass="stat-label"/>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+              <Label fx:id="incomeIconLabel" styleClass="stat-icon stat-icon-income"/>
+              <Label text="Total income" styleClass="stat-label"/>
+            </HBox>
             <Label fx:id="incomeLabel" text="0.00" styleClass="stat-value income-value"/>
             <Label fx:id="incomeDeltaLabel" styleClass="delta-text"/>
           </VBox>
           <VBox spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
-            <Label text="Total expenses" styleClass="stat-label"/>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+              <Label fx:id="expenseIconLabel" styleClass="stat-icon stat-icon-expense"/>
+              <Label text="Total expenses" styleClass="stat-label"/>
+            </HBox>
             <Label fx:id="expenseLabel" text="0.00" styleClass="stat-value expense-value"/>
             <Label fx:id="expenseDeltaLabel" styleClass="delta-text"/>
           </VBox>
           <VBox spacing="4" styleClass="stat-card" HBox.hgrow="ALWAYS">
-            <Label text="Savings rate" styleClass="stat-label"/>
-            <Label fx:id="savingsRateLabel" text="—" styleClass="stat-value balance-value"/>
+            <HBox spacing="8" alignment="CENTER_LEFT">
+              <Label fx:id="savingsIconLabel" styleClass="stat-icon stat-icon-savings"/>
+              <Label text="Savings rate" styleClass="stat-label"/>
+            </HBox>
+            <Label fx:id="savingsRateLabel" text="—" styleClass="stat-value savings-value"/>
             <Label text="share of income saved" styleClass="delta-text delta-neutral"/>
           </VBox>
         </HBox>
@@ -90,15 +103,20 @@
           <Button fx:id="quickBudgetButton" text="Set budget"/>
           <Button fx:id="quickExportButton" text="Export report"/>
         </HBox>
-        <VBox spacing="8" styleClass="card">
-          <Label text="Alerts" styleClass="section-title"/>
-          <Label fx:id="alertLabel" wrapText="true" styleClass="alert-text"/>
-        </VBox>
-        <HBox spacing="16">
+        <!-- Compact status panel: one icon, one short message, one direct action. -->
+        <HBox spacing="10" alignment="CENTER_LEFT" styleClass="card">
+          <Label fx:id="alertIconLabel" styleClass="alert-icon"/>
+          <Label fx:id="alertLabel" wrapText="true" styleClass="alert-text" HBox.hgrow="ALWAYS"/>
+          <Button fx:id="alertActionButton" styleClass="link-button" visible="false"/>
+        </HBox>
+        <HBox spacing="12">
           <VBox spacing="8" styleClass="card" HBox.hgrow="ALWAYS">
-            <Label text="Cash flow" styleClass="section-title"/>
-            <Label text="Income vs expenses · Last 6 months" styleClass="subtitle-text"/>
-            <BarChart fx:id="comparisonChart" prefHeight="250" styleClass="comparison-chart">
+            <HBox alignment="CENTER_LEFT" spacing="8">
+              <Label text="Cash flow" styleClass="section-title" HBox.hgrow="ALWAYS"/>
+              <ComboBox fx:id="cashflowRangeBox" prefWidth="150"/>
+            </HBox>
+            <Label fx:id="cashflowSubtitleLabel" text="Income vs expenses · Last 6 months" styleClass="subtitle-text"/>
+            <BarChart fx:id="comparisonChart" prefHeight="230" styleClass="comparison-chart">
               <xAxis><CategoryAxis fx:id="comparisonXAxis"/></xAxis>
               <yAxis><NumberAxis fx:id="comparisonYAxis"/></yAxis>
             </BarChart>
@@ -119,7 +137,7 @@
             <Label fx:id="spendingEmptyLabel" wrapText="true" styleClass="hint-text" visible="false"/>
           </VBox>
         </HBox>
-        <HBox spacing="16">
+        <HBox spacing="12">
           <VBox spacing="8" styleClass="card" HBox.hgrow="ALWAYS">
             <Label text="Budget overview" styleClass="section-title"/>
             <Label text="This month" styleClass="subtitle-text"/>

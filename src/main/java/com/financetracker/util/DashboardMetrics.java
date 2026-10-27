@@ -15,6 +15,47 @@ public final class DashboardMetrics {
     private DashboardMetrics() {
     }
 
+    /** What a delta line describes: expenses read differently from income — spending
+     *  less is good news, earning less is not. */
+    public enum DeltaKind { INCOME, EXPENSE, NET }
+
+    /** How a delta line should be colored: good, bad, or neither. */
+    public enum DeltaTone { GOOD, BAD, NEUTRAL }
+
+    /** One month-over-month indicator line: its text and its tone. */
+    public record DeltaLine(String text, DeltaTone tone) {
+    }
+
+    /**
+     * The text and tone for one stat card's month-over-month line.
+     * currentEmpty means the current month has no activity for this metric
+     * (for net cash flow: neither income nor expenses) — it reads "No activity
+     * yet" instead of a misleading −100%. A previous month of zero reads
+     * "New activity" instead of dividing by zero. Only when both months have
+     * data does a percentage appear, and expense lines say whether spending
+     * rose or fell, since that meaning differs from an income change.
+     */
+    public static DeltaLine deltaLine(BigDecimal current, BigDecimal previous,
+            boolean currentEmpty, DeltaKind kind) {
+        if (currentEmpty) {
+            return new DeltaLine("No activity yet", DeltaTone.NEUTRAL);
+        }
+        if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
+            return new DeltaLine("New activity", DeltaTone.NEUTRAL);
+        }
+        BigDecimal pct = monthOverMonthChange(current, previous).orElse(BigDecimal.ZERO);
+        boolean up = pct.compareTo(BigDecimal.ZERO) > 0;
+        boolean flat = pct.compareTo(BigDecimal.ZERO) == 0;
+        String arrow = flat ? "•" : (up ? "▲" : "▼");
+        String text = arrow + " " + (up ? "+" : "") + pct.toPlainString() + "% vs last month";
+        if (kind == DeltaKind.EXPENSE && !flat) {
+            text += up ? " (higher spending)" : " (lower spending)";
+        }
+        boolean upIsGood = kind != DeltaKind.EXPENSE;
+        DeltaTone tone = flat ? DeltaTone.NEUTRAL : (up == upIsGood ? DeltaTone.GOOD : DeltaTone.BAD);
+        return new DeltaLine(text, tone);
+    }
+
     /** Percent change from previous to current, one decimal. Empty when previous is zero. */
     public static Optional<BigDecimal> monthOverMonthChange(BigDecimal current, BigDecimal previous) {
         if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {

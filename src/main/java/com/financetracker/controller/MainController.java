@@ -22,9 +22,11 @@ import com.financetracker.service.TransactionService;
 import com.financetracker.util.CsvParser;
 import com.financetracker.util.DashboardMetrics;
 import com.financetracker.util.Money;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.chart.BarChart;
 import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
@@ -46,6 +48,7 @@ import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.control.cell.ProgressBarTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
@@ -55,6 +58,7 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 
 import java.io.File;
@@ -119,6 +123,14 @@ public class MainController {
     @FXML private Label expenseDeltaLabel;
     @FXML private Label balanceDeltaLabel;
     @FXML private Label savingsRateLabel;
+    @FXML private Label netIconLabel;
+    @FXML private Label incomeIconLabel;
+    @FXML private Label expenseIconLabel;
+    @FXML private Label savingsIconLabel;
+    @FXML private Label alertIconLabel;
+    @FXML private Button alertActionButton;
+    @FXML private ComboBox<String> cashflowRangeBox;
+    @FXML private Label cashflowSubtitleLabel;
     @FXML private Button quickBudgetButton;
     @FXML private Button quickExportButton;
     @FXML private Label alertLabel;
@@ -395,6 +407,13 @@ public class MainController {
 
         // Sidebar navigation and dashboard quick actions.
         installSidebarIcons();
+        installStatIcons();
+        cashflowRangeBox.setItems(FXCollections.observableArrayList(
+                "Last 3 months", "Last 6 months", "Last 12 months"));
+        cashflowRangeBox.setValue("Last 6 months");
+        cashflowRangeBox.setOnAction(e -> loadDashboard());
+        // Both alert actions land on the Budgets tab: creating one or viewing them.
+        alertActionButton.setOnAction(e -> showView(2));
         navOverviewButton.setOnAction(e -> showView(0));
         navTransactionsButton.setOnAction(e -> showView(1));
         navBudgetsButton.setOnAction(e -> showView(2));
@@ -456,9 +475,13 @@ public class MainController {
             incomeLabel.setText(Money.format(income));
             expenseLabel.setText(Money.format(expense));
             balanceLabel.setText(Money.format(net));
-            setDelta(balanceDeltaLabel, net, prevNet, true);
-            setDelta(incomeDeltaLabel, income, prevIncome, true);
-            setDelta(expenseDeltaLabel, expense, prevExpense, false);
+            boolean monthEmpty = income.compareTo(BigDecimal.ZERO) == 0
+                    && expense.compareTo(BigDecimal.ZERO) == 0;
+            setDelta(balanceDeltaLabel, net, prevNet, DashboardMetrics.DeltaKind.NET, monthEmpty);
+            setDelta(incomeDeltaLabel, income, prevIncome, DashboardMetrics.DeltaKind.INCOME,
+                    income.compareTo(BigDecimal.ZERO) == 0);
+            setDelta(expenseDeltaLabel, expense, prevExpense, DashboardMetrics.DeltaKind.EXPENSE,
+                    expense.compareTo(BigDecimal.ZERO) == 0);
             savingsRateLabel.setText(DashboardMetrics.savingsRate(income, net)
                     .map(rate -> rate.toPlainString() + "%").orElse("—"));
             // The comparison is month-to-date only while the selected month is still running.
@@ -466,20 +489,32 @@ public class MainController {
             comparisonNoteLabel.setVisible(currentMonth);
             comparisonNoteLabel.setManaged(currentMonth);
 
-            // Alerts: real warnings first; an encouraging empty state otherwise.
-            // "No budgets" and "all budgets fine" are different states and read differently.
+            // Compact status panel: one icon, one short message, one direct action.
+            // "No budgets" and "all budgets fine" are different states: with budgets
+            // set, the panel shows the actual closest-to-limit status, not a generic line.
             List<String> alerts = new ArrayList<>(budgetService.getAlerts(month));
             alerts.addAll(reportService.spendingSurgeAlerts(month));
             List<BudgetStatus> statuses = budgetService.getStatuses(month);
-            String alertsText;
             if (!alerts.isEmpty()) {
-                alertsText = String.join("\n", alerts);
+                setAlertState("\uf071", "alert-icon-warn", null); // triangle-exclamation
+                String first = alerts.get(0);
+                alertLabel.setText(alerts.size() > 1
+                        ? first + " (+" + (alerts.size() - 1) + " more)" : first);
+                alertActionButton.setText("View budgets");
+                alertActionButton.setVisible(true);
+                alertActionButton.setManaged(true);
             } else if (statuses.isEmpty()) {
-                alertsText = "No budgets set for this month yet — set one on the Budgets tab and warnings will show up here.";
+                setAlertState("\uf05a", "alert-icon-info", "alert-text-info"); // circle-info
+                alertLabel.setText("No budgets set for this month yet.");
+                alertActionButton.setText("Create budget");
+                alertActionButton.setVisible(true);
+                alertActionButton.setManaged(true);
             } else {
-                alertsText = "All budgets look fine this month. Nice work staying within your limits.";
+                setAlertState("\uf058", "alert-icon-ok", "alert-text-ok"); // circle-check
+                alertLabel.setText(budgetStatusSummary(statuses));
+                alertActionButton.setVisible(false);
+                alertActionButton.setManaged(false);
             }
-            alertLabel.setText(alertsText);
 
             // Spending breakdown: a donut with a legend once there is a real breakdown,
             // an honest sentence when one category (or none) makes a chart meaningless.
@@ -576,16 +611,18 @@ public class MainController {
             recentTable.setItems(FXCollections.observableArrayList(
                     recent.subList(0, Math.min(8, recent.size()))));
 
-            // Income vs expenses over the 6 months ending at the selected month, oldest first,
-            // so changing the month updates this chart like every other dashboard view.
-            List<String> last6 = trailingMonths(selected, 6);
-            List<MonthTotal> totals = reportService.monthlyTotals(last6);
+            // Income vs expenses over the selected range ending at the selected month, oldest first,
+            // so changing the month (or the range) updates this chart like every other dashboard view.
+            int range = cashflowRange();
+            List<String> chartMonths = trailingMonths(selected, range);
+            List<MonthTotal> totals = reportService.monthlyTotals(chartMonths);
             long monthsWithData = totals.stream()
                     .filter(t -> t.getIncome().compareTo(BigDecimal.ZERO) != 0
                             || t.getExpense().compareTo(BigDecimal.ZERO) != 0)
                     .count();
-            if (monthsWithData < last6.size()) {
-                cashflowNoteLabel.setText("Only " + monthsWithData + " of these 6 months have transactions so far"
+            cashflowSubtitleLabel.setText("Income vs expenses · Last " + range + " months");
+            if (monthsWithData < chartMonths.size()) {
+                cashflowNoteLabel.setText("Only " + monthsWithData + " of these " + range + " months have transactions so far"
                         + " — the quiet months will fill in as you keep logging.");
                 cashflowNoteLabel.setVisible(true);
                 cashflowNoteLabel.setManaged(true);
@@ -602,6 +639,11 @@ public class MainController {
                 expenseSeries.getData().add(new XYChart.Data<>(total.getMonth(), total.getExpense().doubleValue()));
             }
             comparisonChart.getData().setAll(incomeSeries, expenseSeries);
+            // Bar nodes, tooltips, and tick labels only exist after layout: outline the
+            // selected month's bars, give every bar an exact tooltip, and mute quiet
+            // months' axis labels. Best effort — if the nodes are not reachable, the
+            // note above still carries the same information.
+            Platform.runLater(() -> finishCashflowChart(totals, selected.toString()));
         } catch (SQLException e) {
             showError("Could not load the dashboard", e);
         }
@@ -634,6 +676,29 @@ public class MainController {
         button.setGraphic(icon);
     }
 
+    /** The bundled icon font is usable only once it actually loaded. */
+    private boolean iconsLoaded() {
+        return Font.getFamilies().contains("Font Awesome 6 Free Solid");
+    }
+
+    /** Small FontAwesome glyphs on the four stat cards and the alerts panel.
+     *  If the font fails to load, the labels simply stay empty and the titles carry it. */
+    private void installStatIcons() {
+        if (!iconsLoaded()) {
+            return;
+        }
+        setStatIcon(netIconLabel, "\uf24e");      // scale-balanced
+        setStatIcon(incomeIconLabel, "\uf0ab");   // circle-arrow-down
+        setStatIcon(expenseIconLabel, "\uf0aa");  // circle-arrow-up
+        setStatIcon(savingsIconLabel, "\uf4d3");  // piggy-bank
+        alertIconLabel.setFont(Font.font("Font Awesome 6 Free Solid", 16));
+    }
+
+    private void setStatIcon(Label label, String glyph) {
+        label.setText(glyph);
+        label.setFont(Font.font("Font Awesome 6 Free Solid", 16));
+    }
+
     /** Sidebar navigation: select a tab and mark its button selected. */
     private void showView(int index) {
         mainTabPane.getSelectionModel().select(index);
@@ -654,21 +719,108 @@ public class MainController {
         }
     }
 
-    /** Month-over-month delta line: arrow + signed percent + "vs last month", or "—" when undefined. */
-    private void setDelta(Label label, BigDecimal current, BigDecimal previous, boolean upIsGood) {
-        Optional<BigDecimal> change = DashboardMetrics.monthOverMonthChange(current, previous);
+    /** Month-over-month line from DashboardMetrics: text and tone applied together. */
+    private void setDelta(Label label, BigDecimal current, BigDecimal previous,
+            DashboardMetrics.DeltaKind kind, boolean currentEmpty) {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(current, previous, currentEmpty, kind);
+        label.setText(line.text());
         label.getStyleClass().removeAll("delta-good", "delta-bad", "delta-neutral");
-        if (change.isEmpty()) {
-            label.setText("— vs last month");
-            label.getStyleClass().add("delta-neutral");
-            return;
+        label.getStyleClass().add(switch (line.tone()) {
+            case GOOD -> "delta-good";
+            case BAD -> "delta-bad";
+            case NEUTRAL -> "delta-neutral";
+        });
+    }
+
+    /** One alert-panel state: glyph (blank when the icon font failed to load),
+     *  icon color, and the message color override (null keeps the warning yellow). */
+    private void setAlertState(String glyph, String iconClass, String textClass) {
+        alertIconLabel.setText(iconsLoaded() ? glyph : "");
+        alertIconLabel.getStyleClass().removeAll("alert-icon-warn", "alert-icon-ok", "alert-icon-info");
+        alertIconLabel.getStyleClass().add(iconClass);
+        alertLabel.getStyleClass().removeAll("alert-text-ok", "alert-text-info");
+        if (textClass != null) {
+            alertLabel.getStyleClass().add(textClass);
         }
-        BigDecimal pct = change.get();
-        boolean up = pct.compareTo(BigDecimal.ZERO) > 0;
-        boolean flat = pct.compareTo(BigDecimal.ZERO) == 0;
-        String arrow = flat ? "•" : (up ? "▲" : "▼");
-        label.setText(arrow + " " + (up ? "+" : "") + pct.toPlainString() + "% vs last month");
-        label.getStyleClass().add(flat ? "delta-neutral" : (up == upIsGood ? "delta-good" : "delta-bad"));
+    }
+
+    /** One-line actual budget status: how close the closest budget is to its limit. */
+    private String budgetStatusSummary(List<BudgetStatus> statuses) {
+        BudgetStatus closest = null;
+        BigDecimal closestPct = BigDecimal.ZERO;
+        for (BudgetStatus status : statuses) {
+            BigDecimal pct = status.getLimit().compareTo(BigDecimal.ZERO) == 0 ? BigDecimal.ZERO
+                    : status.getSpent().multiply(BigDecimal.valueOf(100))
+                            .divide(status.getLimit(), 1, RoundingMode.HALF_UP);
+            if (closest == null || pct.compareTo(closestPct) > 0) {
+                closest = status;
+                closestPct = pct;
+            }
+        }
+        if (closest == null) {
+            return "All budgets look fine this month.";
+        }
+        return "All budgets within limits — closest: " + closest.getCategoryName()
+                + " at " + closestPct.toPlainString() + "%.";
+    }
+
+    /** Months shown in the cash-flow chart, from the range selector (default 6). */
+    private int cashflowRange() {
+        String value = cashflowRangeBox == null ? null : cashflowRangeBox.getValue();
+        if (value != null && value.startsWith("Last ")) {
+            try {
+                return Integer.parseInt(value.substring(5, value.indexOf(' ', 5)));
+            } catch (NumberFormatException | IndexOutOfBoundsException e) {
+                return 6;
+            }
+        }
+        return 6;
+    }
+
+    /** Post-layout cash-flow decoration: exact tooltips, the selected month outlined,
+     *  quiet months muted on the axis. Never breaks the dashboard if nodes are missing. */
+    private void finishCashflowChart(List<MonthTotal> totals, String selectedMonth) {
+        try {
+            Set<String> quietMonths = new HashSet<>();
+            for (MonthTotal total : totals) {
+                if (total.getIncome().compareTo(BigDecimal.ZERO) == 0
+                        && total.getExpense().compareTo(BigDecimal.ZERO) == 0) {
+                    quietMonths.add(total.getMonth());
+                }
+            }
+            for (XYChart.Series<String, Number> series : comparisonChart.getData()) {
+                for (XYChart.Data<String, Number> data : series.getData()) {
+                    Node node = data.getNode();
+                    if (node == null) {
+                        continue;
+                    }
+                    MonthTotal total = totals.stream()
+                            .filter(t -> t.getMonth().equals(data.getXValue()))
+                            .findFirst().orElse(null);
+                    if (total == null) {
+                        continue;
+                    }
+                    String monthLabel = YearMonth.parse(total.getMonth())
+                            .format(DateTimeFormatter.ofPattern("MMM yyyy"));
+                    String tip = quietMonths.contains(total.getMonth())
+                            ? monthLabel + "\nNo activity recorded"
+                            : monthLabel + "\nIncome: " + Money.format(total.getIncome())
+                                    + "\nExpenses: " + Money.format(total.getExpense());
+                    Tooltip.install(node, new Tooltip(tip));
+                    if (total.getMonth().equals(selectedMonth)
+                            && !node.getStyleClass().contains("current-month-bar")) {
+                        node.getStyleClass().add("current-month-bar");
+                    }
+                }
+            }
+            for (Node tick : comparisonXAxis.lookupAll("Text")) {
+                if (tick instanceof Text text && quietMonths.contains(text.getText())) {
+                    text.setFill(Color.web("#64748B"));
+                }
+            }
+        } catch (RuntimeException e) {
+            // Chart decoration only — the chart and its note already carry the data.
+        }
     }
 
     /** Signed, colored amounts: + for income, − for expense; color only reinforces the sign. */

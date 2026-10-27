@@ -39,6 +39,69 @@ class DashboardMetricsTest {
     }
 
     @Test
+    void deltaLineEmptyCurrentMonthShowsNoActivityYet() {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
+                BigDecimal.ZERO, new BigDecimal("1000"), true, DashboardMetrics.DeltaKind.INCOME);
+        assertEquals("No activity yet", line.text());
+        assertEquals(DashboardMetrics.DeltaTone.NEUTRAL, line.tone());
+    }
+
+    @Test
+    void deltaLineEmptyCurrentMonthBeatsZeroPreviousMonth() {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
+                BigDecimal.ZERO, BigDecimal.ZERO, true, DashboardMetrics.DeltaKind.EXPENSE);
+        assertEquals("No activity yet", line.text());
+    }
+
+    @Test
+    void deltaLineZeroPreviousMonthShowsNewActivity() {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
+                new BigDecimal("500"), BigDecimal.ZERO, false, DashboardMetrics.DeltaKind.INCOME);
+        assertEquals("New activity", line.text());
+        assertEquals(DashboardMetrics.DeltaTone.NEUTRAL, line.tone());
+    }
+
+    @Test
+    void deltaLineIncomeRiseIsGood() {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
+                new BigDecimal("1125"), new BigDecimal("1000"), false, DashboardMetrics.DeltaKind.INCOME);
+        assertEquals("▲ +12.5% vs last month", line.text());
+        assertEquals(DashboardMetrics.DeltaTone.GOOD, line.tone());
+    }
+
+    @Test
+    void deltaLineIncomeFallIsBad() {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
+                new BigDecimal("900"), new BigDecimal("1000"), false, DashboardMetrics.DeltaKind.INCOME);
+        assertEquals("▼ -10.0% vs last month", line.text());
+        assertEquals(DashboardMetrics.DeltaTone.BAD, line.tone());
+    }
+
+    @Test
+    void deltaLineExpenseFallIsGoodAndSaysSo() {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
+                new BigDecimal("800"), new BigDecimal("1000"), false, DashboardMetrics.DeltaKind.EXPENSE);
+        assertEquals("▼ -20.0% vs last month (lower spending)", line.text());
+        assertEquals(DashboardMetrics.DeltaTone.GOOD, line.tone());
+    }
+
+    @Test
+    void deltaLineExpenseRiseIsBadAndSaysSo() {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
+                new BigDecimal("1200"), new BigDecimal("1000"), false, DashboardMetrics.DeltaKind.EXPENSE);
+        assertEquals("▲ +20.0% vs last month (higher spending)", line.text());
+        assertEquals(DashboardMetrics.DeltaTone.BAD, line.tone());
+    }
+
+    @Test
+    void deltaLineFlatIsNeutral() {
+        DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
+                new BigDecimal("1000"), new BigDecimal("1000"), false, DashboardMetrics.DeltaKind.NET);
+        assertEquals("• 0.0% vs last month", line.text());
+        assertEquals(DashboardMetrics.DeltaTone.NEUTRAL, line.tone());
+    }
+
+    @Test
     void greetingFollowsTimeOfDay() {
         assertEquals("Good morning", DashboardMetrics.greetingForHour(8));
         assertEquals("Good afternoon", DashboardMetrics.greetingForHour(13));

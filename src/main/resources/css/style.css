@@ -95,7 +95,7 @@
     -fx-background-radius: 14;
     -fx-border-color: #263241;
     -fx-border-radius: 14;
-    -fx-padding: 16;
+    -fx-padding: 12;
 }
 
 .stat-label {
@@ -119,6 +119,35 @@
 
 .balance-value {
     -fx-text-fill: #e7ebf0;
+}
+
+/* Stat-card icons and value colors: net blue, income green, expenses coral, savings violet. */
+.stat-icon {
+    -fx-font-size: 16px;
+}
+
+.stat-icon-net {
+    -fx-text-fill: #3B82F6;
+}
+
+.stat-icon-income {
+    -fx-text-fill: #34D399;
+}
+
+.stat-icon-expense {
+    -fx-text-fill: #F87171;
+}
+
+.stat-icon-savings {
+    -fx-text-fill: #8B5CF6;
+}
+
+.net-value {
+    -fx-text-fill: #3B82F6;
+}
+
+.savings-value {
+    -fx-text-fill: #8B5CF6;
 }
 
 .delta-text {
@@ -158,6 +187,31 @@
 
 .alert-text {
     -fx-text-fill: #FBBF24;
+}
+
+/* Compact alerts panel: the icon and message follow the state, not always yellow. */
+.alert-icon {
+    -fx-font-size: 16px;
+}
+
+.alert-icon-warn {
+    -fx-text-fill: #FBBF24;
+}
+
+.alert-icon-ok {
+    -fx-text-fill: #34D399;
+}
+
+.alert-icon-info {
+    -fx-text-fill: #94A3B8;
+}
+
+.alert-text-ok {
+    -fx-text-fill: #e7ebf0;
+}
+
+.alert-text-info {
+    -fx-text-fill: #94A3B8;
 }
 
 .donut-hole {
@@ -469,6 +523,22 @@
 /* Income vs expenses bars: first series income, second expense. */
 .comparison-chart .default-color0.chart-bar { -fx-bar-fill: #34D399; }
 .comparison-chart .default-color1.chart-bar { -fx-bar-fill: #F87171; }
+
+/* The selected month's bars carry a light outline so the current month stands out. */
+.comparison-chart .current-month-bar.chart-bar {
+    -fx-border-color: #e7ebf0;
+    -fx-border-width: 1.5;
+    -fx-border-radius: 2;
+}
+
+/* Bar tooltips on the dark theme (default tooltips are light and unreadable here). */
+.tooltip {
+    -fx-background-color: #151D27;
+    -fx-text-fill: #e7ebf0;
+    -fx-border-color: #263241;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
 
 /* ---------- Scrolling ---------- */
 
