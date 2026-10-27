@@ -1,0 +1,520 @@
+/* Personal Finance Tracker — standardized dark theme.
+   Design tokens (single standard, no per-panel styling):
+   background #0B0F14 · sidebar #101720 · cards #151D27 · borders #263241
+   accent blue #3B82F6 · income #34D399 · expenses #F87171 · secondary text #94A3B8
+   card radius 14px · main spacing 16-24px · Segoe UI.
+   Flat colors only: no gradients, no glows.
+   Income/expense meaning is never color alone: labels and +/− signs always carry it. */
+
+.root {
+    -fx-font-family: "Segoe UI", sans-serif;
+    -fx-font-size: 13px;
+    -fx-background-color: #0B0F14;
+    -fx-text-fill: #e7ebf0;
+}
+
+.label {
+    -fx-text-fill: #e7ebf0;
+}
+
+/* ---------- Sidebar navigation ---------- */
+
+.sidebar {
+    -fx-background-color: #101720;
+    -fx-padding: 20 12;
+}
+
+.sidebar-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+}
+
+.sidebar-title-accent {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #3B82F6;
+}
+
+.sidebar-logo-text {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.nav-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #94A3B8;
+    -fx-alignment: CENTER_LEFT;
+    -fx-padding: 10 12;
+    -fx-background-radius: 8;
+    -fx-font-size: 14px;
+    -fx-graphic-text-gap: 10;
+}
+
+.nav-button:hover {
+    -fx-background-color: #1a2332;
+    -fx-text-fill: #e7ebf0;
+}
+
+.nav-button-selected {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #3B82F6;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent transparent transparent #3B82F6;
+    -fx-border-width: 0 0 0 3;
+}
+
+.nav-button .label {
+    -fx-text-fill: #94A3B8;
+}
+
+.nav-button-selected .label {
+    -fx-text-fill: #3B82F6;
+}
+
+/* The tab bar is hidden: the sidebar drives selection. */
+
+.main-tab-pane {
+    -fx-tab-max-height: 0;
+    -fx-tab-min-height: 0;
+}
+
+.main-tab-pane .tab-header-area {
+    -fx-padding: 0;
+}
+
+.main-tab-pane .tab-header-area .tab-header-background {
+    -fx-background-color: #0B0F14;
+}
+
+/* ---------- Cards (dashboard stats, charts, alerts) ---------- */
+
+.card, .stat-card {
+    -fx-background-color: #151D27;
+    -fx-background-radius: 14;
+    -fx-border-color: #263241;
+    -fx-border-radius: 14;
+    -fx-padding: 16;
+}
+
+.stat-label {
+    -fx-text-fill: #94A3B8;
+    -fx-font-weight: bold;
+    -fx-font-size: 12px;
+}
+
+.stat-value {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.income-value {
+    -fx-text-fill: #34D399;
+}
+
+.expense-value {
+    -fx-text-fill: #F87171;
+}
+
+.balance-value {
+    -fx-text-fill: #e7ebf0;
+}
+
+.delta-text {
+    -fx-font-size: 12px;
+}
+
+.delta-good {
+    -fx-text-fill: #34D399;
+}
+
+.delta-bad {
+    -fx-text-fill: #F87171;
+}
+
+.delta-neutral {
+    -fx-text-fill: #94A3B8;
+}
+
+.greeting-title {
+    -fx-font-size: 26px;
+    -fx-font-weight: bold;
+}
+
+.section-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+
+.subtitle-text {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 12px;
+}
+
+.hint-text {
+    -fx-text-fill: #94A3B8;
+}
+
+.alert-text {
+    -fx-text-fill: #FBBF24;
+}
+
+.donut-hole {
+    -fx-fill: #151D27;
+}
+
+.donut-total-value {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+
+.donut-total-caption {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 11px;
+}
+
+.category-badge {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #263241;
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-padding: 2 10;
+}
+
+/* ---------- Buttons ---------- */
+
+.button {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #e7ebf0;
+    -fx-border-color: #263241;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-padding: 7 14;
+}
+
+.button:hover {
+    -fx-background-color: #26334A;
+}
+
+.button:pressed {
+    -fx-background-color: #2E3F57;
+}
+
+.primary-button {
+    -fx-background-color: #3B82F6;
+    -fx-text-fill: white;
+    -fx-border-color: transparent;
+}
+
+.primary-button:hover {
+    -fx-background-color: #2563EB;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #1D4ED8;
+}
+
+.link-button {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-text-fill: #3B82F6;
+    -fx-padding: 4 8;
+}
+
+.link-button:hover {
+    -fx-background-color: transparent;
+    -fx-underline: true;
+}
+
+/* ---------- Inputs ---------- */
+
+.text-field, .combo-box, .date-picker {
+    -fx-background-color: #101720;
+    -fx-text-fill: #e7ebf0;
+    -fx-border-color: #263241;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+}
+
+.text-field:focused, .combo-box:focused, .date-picker:focused {
+    -fx-border-color: #3B82F6;
+}
+
+.text-field {
+    -fx-prompt-text-fill: #64748B;
+}
+
+.combo-box .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: #e7ebf0;
+}
+
+.combo-box-popup .list-view {
+    -fx-background-color: #151D27;
+    -fx-border-color: #263241;
+}
+
+.combo-box-popup .list-view .list-cell {
+    -fx-background-color: #151D27;
+    -fx-text-fill: #e7ebf0;
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover,
+.combo-box-popup .list-view .list-cell:filled:selected {
+    -fx-background-color: #26334A;
+}
+
+.combo-box .arrow-button {
+    -fx-background-color: transparent;
+}
+
+.combo-box .arrow {
+    -fx-background-color: #94A3B8;
+}
+
+.check-box {
+    -fx-text-fill: #e7ebf0;
+}
+
+.check-box .box {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #263241;
+}
+
+.check-box:selected .mark {
+    -fx-background-color: #e7ebf0;
+}
+
+/* Date picker popup */
+
+.date-picker-popup {
+    -fx-background-color: #151D27;
+    -fx-border-color: #263241;
+}
+
+.date-picker-popup .month-year-pane {
+    -fx-background-color: #151D27;
+}
+
+.date-picker-popup .month-year-pane .label {
+    -fx-text-fill: #e7ebf0;
+}
+
+.date-picker-popup .calendar-grid {
+    -fx-background-color: #151D27;
+}
+
+.date-picker-popup .day-cell {
+    -fx-background-color: #151D27;
+    -fx-text-fill: #e7ebf0;
+    -fx-border-color: transparent;
+}
+
+.date-picker-popup .day-cell:hover {
+    -fx-background-color: #26334A;
+}
+
+.date-picker-popup .day-cell:selected {
+    -fx-background-color: #3B82F6;
+    -fx-text-fill: white;
+}
+
+.date-picker-popup .day-name-cell {
+    -fx-text-fill: #94A3B8;
+}
+
+.date-picker-popup .left-button .left-arrow,
+.date-picker-popup .right-button .right-arrow {
+    -fx-background-color: #94A3B8;
+}
+
+/* ---------- Tables ---------- */
+
+.table-view {
+    -fx-background-color: #151D27;
+    -fx-border-color: #263241;
+    -fx-border-radius: 8;
+    -fx-background-radius: 8;
+    -fx-fixed-cell-size: 36px;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #1E293B;
+}
+
+.table-view .column-header {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header .label {
+    -fx-text-fill: #e7ebf0;
+    -fx-font-weight: bold;
+}
+
+.table-view .filler {
+    -fx-background-color: #1E293B;
+}
+
+.table-view .table-cell {
+    -fx-text-fill: #e7ebf0;
+    -fx-border-color: transparent;
+}
+
+.table-view .table-cell.amount-col {
+    -fx-alignment: CENTER_RIGHT;
+    -fx-padding: 0 10 0 0;
+}
+
+.table-view .table-cell.payment-col {
+    -fx-alignment: CENTER;
+}
+
+.table-view .table-cell.income-value {
+    -fx-text-fill: #34D399;
+}
+
+.table-view .table-cell.expense-value {
+    -fx-text-fill: #F87171;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: #151D27;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #182230;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #2A3B52;
+}
+
+.table-view .placeholder .label {
+    -fx-text-fill: #94A3B8;
+}
+
+.progress-bar {
+    -fx-accent: #3B82F6;
+    -fx-background-color: transparent;
+}
+
+.progress-bar .track {
+    -fx-background-color: #263241;
+}
+
+.progress-bar .bar {
+    -fx-background-color: -fx-accent;
+    -fx-background-insets: 0;
+    -fx-background-radius: 4;
+}
+
+/* ---------- Charts ---------- */
+
+.chart {
+    -fx-background-color: transparent;
+}
+
+.chart-plot-background {
+    -fx-background-color: transparent;
+}
+
+.chart-title {
+    -fx-text-fill: #e7ebf0;
+    -fx-font-size: 13px;
+}
+
+.chart-legend {
+    -fx-background-color: transparent;
+}
+
+.chart-legend-item {
+    -fx-text-fill: #94A3B8;
+}
+
+.axis {
+    -fx-tick-label-fill: #94A3B8;
+}
+
+.axis-label {
+    -fx-text-fill: #94A3B8;
+}
+
+.axis .axis-tick-mark, .axis .axis-minor-tick-mark {
+    -fx-stroke: #263241;
+}
+
+.chart-horizontal-grid-lines, .chart-vertical-grid-lines {
+    -fx-stroke: #232a32;
+}
+
+.chart-pie-label {
+    -fx-fill: #94A3B8;
+}
+
+.chart-pie-label-line {
+    -fx-stroke: #94A3B8;
+}
+
+.default-color0.chart-pie { -fx-pie-color: #3B82F6; }
+.default-color1.chart-pie { -fx-pie-color: #34D399; }
+.default-color2.chart-pie { -fx-pie-color: #F87171; }
+.default-color3.chart-pie { -fx-pie-color: #FBBF24; }
+.default-color4.chart-pie { -fx-pie-color: #A78BFA; }
+.default-color5.chart-pie { -fx-pie-color: #22D3EE; }
+.default-color6.chart-pie { -fx-pie-color: #FB923C; }
+.default-color7.chart-pie { -fx-pie-color: #94A3B8; }
+
+/* Income vs expenses bars: first series income, second expense. */
+.comparison-chart .default-color0.chart-bar { -fx-bar-fill: #34D399; }
+.comparison-chart .default-color1.chart-bar { -fx-bar-fill: #F87171; }
+
+/* ---------- Scrolling ---------- */
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+.scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar {
+    -fx-background-color: #0B0F14;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: #263241;
+    -fx-background-radius: 6;
+}
+
+.scroll-bar .thumb:hover {
+    -fx-background-color: #334155;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-background-color: #94A3B8;
+}
+
+/* ---------- Dialogs and alerts (they open their own windows) ---------- */
+
+.dialog-pane {
+    -fx-background-color: #151D27;
+}
+
+.dialog-pane .label {
+    -fx-text-fill: #e7ebf0;
+}
+
+.dialog-pane .header-panel {
+    -fx-background-color: #151D27;
+}
+
+.dialog-pane .header-panel .label {
+    -fx-text-fill: #e7ebf0;
+}

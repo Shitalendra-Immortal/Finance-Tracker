@@ -1,0 +1,7 @@
+# Copy this file to db.properties and fill in your own MySQL details.
+# db.properties is gitignored, so your password never reaches GitHub.
+db.host=localhost
+db.port=3306
+db.name=finance_tracker
+db.user=root
+db.password=YOUR_MYSQL_PASSWORD
