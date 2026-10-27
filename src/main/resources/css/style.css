@@ -2,7 +2,10 @@
    Design tokens (single standard, no per-panel styling):
    background #0B0F14 · sidebar #101720 · cards #151D27 · borders #263241
    accent blue #3B82F6 · income #34D399 · expenses #F87171 · secondary text #94A3B8
-   card radius 14px · main spacing 16-24px · Segoe UI.
+   card radius 14px, one border color · Segoe UI throughout.
+   Spacing scale: layout gaps and padding are multiples of 8 (8/16/24);
+   micro gaps inside components (badges, legend rows) use 4.
+   Type scale: display 26, titles 18, section 15, body 13-14, secondary 12, captions 11.
    Flat colors only: no gradients, no glows.
    Income/expense meaning is never color alone: labels and +/− signs always carry it. */
 
@@ -21,7 +24,7 @@
 
 .sidebar {
     -fx-background-color: #101720;
-    -fx-padding: 20 12;
+    -fx-padding: 16;
 }
 
 .sidebar-title {
@@ -46,7 +49,7 @@
     -fx-border-color: transparent;
     -fx-text-fill: #94A3B8;
     -fx-alignment: CENTER_LEFT;
-    -fx-padding: 10 12;
+    -fx-padding: 8 16;
     -fx-background-radius: 8;
     -fx-font-size: 14px;
     -fx-graphic-text-gap: 10;
@@ -95,7 +98,7 @@
     -fx-background-radius: 14;
     -fx-border-color: #263241;
     -fx-border-radius: 14;
-    -fx-padding: 12;
+    -fx-padding: 16;
 }
 
 .stat-label {
@@ -233,7 +236,7 @@
     -fx-border-color: #263241;
     -fx-background-radius: 12;
     -fx-border-radius: 12;
-    -fx-padding: 2 10;
+    -fx-padding: 4 8;
 }
 
 /* ---------- Buttons ---------- */
@@ -244,7 +247,7 @@
     -fx-border-color: #263241;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
-    -fx-padding: 7 14;
+    -fx-padding: 8 16;
 }
 
 .button:hover {
@@ -273,7 +276,7 @@
     -fx-background-color: transparent;
     -fx-border-color: transparent;
     -fx-text-fill: #3B82F6;
-    -fx-padding: 4 8;
+    -fx-padding: 8;
 }
 
 .link-button:hover {
@@ -418,7 +421,7 @@
 
 .table-view .table-cell.amount-col {
     -fx-alignment: CENTER_RIGHT;
-    -fx-padding: 0 10 0 0;
+    -fx-padding: 0 8 0 0;
 }
 
 .table-view .table-cell.payment-col {
@@ -443,6 +446,10 @@
 
 .table-view .table-row-cell:selected {
     -fx-background-color: #2A3B52;
+}
+
+.table-view .table-row-cell:hover {
+    -fx-background-color: #1B2635;
 }
 
 .table-view .placeholder .label {

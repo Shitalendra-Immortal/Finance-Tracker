@@ -123,6 +123,7 @@ public class MainController {
     @FXML private Label expenseDeltaLabel;
     @FXML private Label balanceDeltaLabel;
     @FXML private Label savingsRateLabel;
+    @FXML private Label savingsCaptionLabel;
     @FXML private Label netIconLabel;
     @FXML private Label incomeIconLabel;
     @FXML private Label expenseIconLabel;
@@ -484,6 +485,10 @@ public class MainController {
                     expense.compareTo(BigDecimal.ZERO) == 0);
             savingsRateLabel.setText(DashboardMetrics.savingsRate(income, net)
                     .map(rate -> rate.toPlainString() + "%").orElse("—"));
+            // The rate is undefined without income; say so instead of leaving the
+            // standing "share of income saved" caption under a dash.
+            savingsCaptionLabel.setText(income.compareTo(BigDecimal.ZERO) == 0
+                    ? "Not available yet" : "share of income saved");
             // The comparison is month-to-date only while the selected month is still running.
             boolean currentMonth = selected.equals(YearMonth.now());
             comparisonNoteLabel.setVisible(currentMonth);

@@ -41,16 +41,24 @@ class DashboardMetricsTest {
     @Test
     void deltaLineEmptyCurrentMonthShowsNoActivityYet() {
         DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
-                BigDecimal.ZERO, new BigDecimal("1000"), true, DashboardMetrics.DeltaKind.INCOME);
+                BigDecimal.ZERO, new BigDecimal("1000"), true, DashboardMetrics.DeltaKind.NET);
         assertEquals("No activity yet", line.text());
         assertEquals(DashboardMetrics.DeltaTone.NEUTRAL, line.tone());
+    }
+
+    @Test
+    void deltaLineEmptyMonthWordedPerCard() {
+        assertEquals("No income recorded", DashboardMetrics.deltaLine(
+                BigDecimal.ZERO, new BigDecimal("1000"), true, DashboardMetrics.DeltaKind.INCOME).text());
+        assertEquals("No expenses recorded", DashboardMetrics.deltaLine(
+                BigDecimal.ZERO, new BigDecimal("1000"), true, DashboardMetrics.DeltaKind.EXPENSE).text());
     }
 
     @Test
     void deltaLineEmptyCurrentMonthBeatsZeroPreviousMonth() {
         DashboardMetrics.DeltaLine line = DashboardMetrics.deltaLine(
                 BigDecimal.ZERO, BigDecimal.ZERO, true, DashboardMetrics.DeltaKind.EXPENSE);
-        assertEquals("No activity yet", line.text());
+        assertEquals("No expenses recorded", line.text());
     }
 
     @Test

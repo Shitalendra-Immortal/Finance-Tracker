@@ -29,8 +29,10 @@ public final class DashboardMetrics {
     /**
      * The text and tone for one stat card's month-over-month line.
      * currentEmpty means the current month has no activity for this metric
-     * (for net cash flow: neither income nor expenses) — it reads "No activity
-     * yet" instead of a misleading −100%. A previous month of zero reads
+     * (for net cash flow: neither income nor expenses) — it reads a plain
+     * empty-state line instead of a misleading −100%, worded per card:
+     * "No activity yet" for net, "No income recorded" for income,
+     * "No expenses recorded" for expenses. A previous month of zero reads
      * "New activity" instead of dividing by zero. Only when both months have
      * data does a percentage appear, and expense lines say whether spending
      * rose or fell, since that meaning differs from an income change.
@@ -38,7 +40,12 @@ public final class DashboardMetrics {
     public static DeltaLine deltaLine(BigDecimal current, BigDecimal previous,
             boolean currentEmpty, DeltaKind kind) {
         if (currentEmpty) {
-            return new DeltaLine("No activity yet", DeltaTone.NEUTRAL);
+            String emptyText = switch (kind) {
+                case INCOME -> "No income recorded";
+                case EXPENSE -> "No expenses recorded";
+                case NET -> "No activity yet";
+            };
+            return new DeltaLine(emptyText, DeltaTone.NEUTRAL);
         }
         if (previous == null || previous.compareTo(BigDecimal.ZERO) == 0) {
             return new DeltaLine("New activity", DeltaTone.NEUTRAL);

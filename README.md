@@ -13,10 +13,14 @@ project for database queries and real data analysis.
 - **Dashboard** — a greeting header with month selector and a prominent
   Add button; four stat cards (net cash flow, total income, total
   expenses, savings rate) with small color-coded icons and month-over-month
-  lines that read "No activity yet" when the current month is empty and
-  "New activity" when the previous month was zero, with expense lines
-  saying whether spending rose or fell (and a note that current-month
-  comparisons are month-to-date); quick actions for Set
+  lines worded per card when the current month is empty ("No activity
+  yet" for net, "No income recorded" for income, "No expenses recorded"
+  for expenses) and "New activity" when the previous month was zero,
+  with expense lines saying whether spending rose or fell (and a note
+  that current-month comparisons are month-to-date); a standing note
+  that figures cover the selected month only, not a bank balance, and
+  "Not available yet" under a dashed savings rate when there is no
+  income; quick actions for Set
   budget and Export report; a compact alerts panel (one icon, one short
   message, one action) that shows the closest budget to its limit when
   all budgets are fine; a cash-flow chart over the last 3, 6, or 12
@@ -25,8 +29,10 @@ project for database queries and real data analysis.
   the total in the middle and a legend, replaced by an honest sentence
   when a single category (or none) makes a chart meaningless; a budget
   overview with progress bars; and recent transactions with a View all
-  link and rows that jump to the transaction on double-click. Amounts
-  always carry a +/− sign and a label, never color alone.
+  link and rows that jump to the transaction on double-click. Spacing
+  follows an 8-point layout scale (4 for micro gaps), cards share one
+  radius and border, and dashboard cards stretch with the window.
+  Amounts always carry a +/− sign and a label, never color alone.
 - **Indian money formatting** — every amount in the app displays as
   ₹1,000.00 or ₹1,00,000.00 (lakh grouping), negatives as −₹900.00.
   Calculations stay BigDecimal; formatting happens only at display time.
